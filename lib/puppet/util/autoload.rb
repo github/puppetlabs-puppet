@@ -71,6 +71,9 @@ class Puppet::Util::Autoload
     path = name.to_s + ".rb"
     return false if path =~ /::/
 
+    @failed_to_load ||= {}
+    return false if @failed_to_load[name]
+
     searchpath(env).each do |dir|
       file = File.join(dir, path)
       next unless file_exist?(file)
@@ -86,6 +89,8 @@ class Puppet::Util::Autoload
         raise Puppet::Error, "Could not autoload #{name}: #{detail}"
       end
     end
+
+    @failed_to_load[name] = true
     false
   end
 
