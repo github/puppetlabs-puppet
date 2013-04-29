@@ -69,6 +69,7 @@ class Puppet::Util::Autoload
   # given plugin.
   def load(name,env=nil)
     path = name.to_s + ".rb"
+    return false if path =~ /::/
 
     searchpath(env).each do |dir|
       file = File.join(dir, path)
