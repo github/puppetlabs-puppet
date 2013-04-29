@@ -130,7 +130,9 @@ class Puppet::Util::Autoload
 
   # The list of directories to search through for loadable plugins.
   def searchpath(env=nil)
-    search_directories(env).uniq.collect { |d| File.join(d, @path) }.find_all { |d| FileTest.directory?(d) }
+    @searchpaths ||= {}
+    @searchpaths[env] ||=
+      search_directories(env).uniq.collect { |d| File.join(d, @path) }.find_all { |d| FileTest.directory?(d) }
   end
 
   def module_directories(env=nil)
