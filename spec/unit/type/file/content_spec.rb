@@ -176,10 +176,11 @@ describe content do
           Puppet[:show_diff] = true
         end
 
-        it "should display a diff if the current contents are different from the desired content" do
+        it "should display a diff if the current contents are different from the desired content, at the resource's own log level" do
           @content.should = "some content"
+          @resource[:loglevel] = :debug
           @content.expects(:diff).returns("my diff").once
-          @content.expects(:notice).with("\nmy diff").once
+          @content.expects(:debug).with("\nmy diff").once
 
           @content.safe_insync?("other content")
         end
