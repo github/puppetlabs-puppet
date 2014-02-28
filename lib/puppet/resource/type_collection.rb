@@ -128,7 +128,7 @@ class Puppet::Resource::TypeCollection
   end
 
   def stale?
-    @watched_files.values.detect { |file| file.changed? }
+    false
   end
 
   def version

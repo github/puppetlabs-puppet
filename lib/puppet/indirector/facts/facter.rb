@@ -43,7 +43,7 @@ class Puppet::Node::Facts::Facter < Puppet::Indirector::Code
       Dir.glob("*.rb").each do |file|
         fqfile = ::File.join(dir, file)
         begin
-          Puppet.info "Loading facts in #{fqfile}"
+          Puppet.debug "Loading facts in #{fqfile}"
           Timeout::timeout(self.timeout) do
             load file
           end

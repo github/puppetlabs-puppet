@@ -58,7 +58,7 @@ module Puppet
         if subcommand_name and available_subcommands.include?(subcommand_name) then
           require_application subcommand_name
           app = Puppet::Application.find(subcommand_name).new(self)
-          Puppet::Plugins.on_application_initialization(:appliation_object => self)
+          Puppet::Plugins.on_application_initialization(:application_object => self)
 
           # See the note in 'warn_later' down below. --daniel 2011-06-01
           if $delayed_deprecation_warning_for_p_u_cl.is_a? String then

@@ -69,6 +69,10 @@ class Puppet::Util::Autoload
   # given plugin.
   def load(name,env=nil)
     path = name.to_s + ".rb"
+    return false if path =~ /::/
+
+    @failed_to_load ||= {}
+    return false if @failed_to_load[name]
 
     searchpath(env).each do |dir|
       file = File.join(dir, path)
@@ -85,6 +89,8 @@ class Puppet::Util::Autoload
         raise Puppet::Error, "Could not autoload #{name}: #{detail}"
       end
     end
+
+    @failed_to_load[name] = true
     false
   end
 
@@ -124,7 +130,9 @@ class Puppet::Util::Autoload
 
   # The list of directories to search through for loadable plugins.
   def searchpath(env=nil)
-    search_directories(env).uniq.collect { |d| File.join(d, @path) }.find_all { |d| FileTest.directory?(d) }
+    @searchpaths ||= {}
+    @searchpaths[env] ||=
+      search_directories(env).uniq.collect { |d| File.join(d, @path) }.find_all { |d| FileTest.directory?(d) }
   end
 
   def module_directories(env=nil)

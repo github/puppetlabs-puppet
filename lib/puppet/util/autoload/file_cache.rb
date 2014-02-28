@@ -79,7 +79,7 @@ module Puppet::Util::Autoload::FileCache
   end
 
   def data_expired?(time)
-    Time.now - time > 15
+    false
   end
 
   def protect(path)
