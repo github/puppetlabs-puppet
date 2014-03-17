@@ -111,7 +111,7 @@ Puppet::Type.type(:package).provide :gem, :parent => Puppet::Provider::Package d
 
     versions_to_purge.each do |v|
       Puppet.info("Removing gem #{resource[:name]} version: #{v}")
-      output = execute([command(:gemcmd), "uninstall", "--version", v])
+      output = execute([command(:gemcmd), "uninstall", "--executables", "--version", v])
 
       if output.exitstatus != 0
         self.fail "Could not remove gem #{resource[:name]} version: #{v}! #{output}"
