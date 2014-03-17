@@ -71,9 +71,7 @@ Puppet::Type.type(:package).provide :gem, :parent => Puppet::Provider::Package d
 
   def install(useversion = true)
     command = [command(:gemcmd), "install"]
-    command << "-v" << resource[:ensure] if (! resource[:ensure].is_a? Symbol) and useversion
-    # Always include dependencies
-    command << "--include-dependencies"
+    command << "--version" << resource[:ensure] if (! resource[:ensure].is_a? Symbol) and useversion
 
     if source = resource[:source]
       begin
@@ -102,6 +100,23 @@ Puppet::Type.type(:package).provide :gem, :parent => Puppet::Provider::Package d
     output = execute(command)
     # Apparently some stupid gem versions don't exit non-0 on failure
     self.fail "Could not install: #{output.chomp}" if output.include?("ERROR")
+
+    versions_to_purge = gemlist(:justme => resource[:name], :local => true)[:ensure]
+
+    # we keep the most recent versions if latest
+    versions_to_purge.shift if resource[:ensure] == :latest
+
+    # if we have an explicit version, only keep that
+    versions_to_purge.reject! { |v| v == resource[:ensure] }
+
+    versions_to_purge.each do |v|
+      Puppet.info("Removing gem #{resource[:name]} version: #{v}")
+      output = execute([command(:gemcmd), "uninstall", "--executables", "--version", v])
+
+      if output.exitstatus != 0
+        self.fail "Could not remove gem #{resource[:name]} version: #{v}! #{output}"
+      end
+    end
   end
 
   def latest
@@ -114,7 +129,13 @@ Puppet::Type.type(:package).provide :gem, :parent => Puppet::Provider::Package d
   end
 
   def query
-    self.class.gemlist(:justme => resource[:name], :local => true)
+    state = self.class.gemlist(:justme => resource[:name], :local => true)
+
+    if state[:ensure].length > 1
+      state[:ensure] = :absent
+    end
+
+    state
   end
 
   def uninstall
