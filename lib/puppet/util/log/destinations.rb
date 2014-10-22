@@ -9,7 +9,7 @@ Puppet::Util::Log.newdesttype :syslog do
 
   def initialize
     Syslog.close if Syslog.opened?
-    name = "puppet-#{Puppet.run_mode.name}"
+    name = "puppet-#{Puppet.run_mode.name}3"
 
     options = Syslog::LOG_PID | Syslog::LOG_NDELAY
 
