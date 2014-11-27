@@ -164,8 +164,12 @@ module Puppet::Util::Execution
     if execution_stub = Puppet::Util::ExecutionStub.current_value
       return execution_stub.call(*exec_args)
     elsif Puppet.features.posix?
-      child_pid = execute_posix(*exec_args)
-      exit_status = Process.waitpid2(child_pid).last.exitstatus
+      begin
+        child_pid = execute_posix(*exec_args)
+        exit_status = Process.waitpid2(child_pid).last.exitstatus
+      ensure
+        Process.kill(9, child_pid) unless defined?(exit_status)
+      end
     elsif Puppet.features.microsoft_windows?
       process_info = execute_windows(*exec_args)
       begin
