@@ -170,8 +170,11 @@ module Puppet::Util::Execution
       ensure
         begin
           Process.kill(0, child_pid)
-          Puppet.debug("SIGKILLing child process '#{child_pid}'")
-          Process.kill(9, child_pid)
+          child_ppid = `ps -p #{child_pid} -o ppid`.strip.to_i
+          if child_ppid == Process.pid
+            Puppet.debug("SIGKILLing child process '#{child_pid}'")
+            Process.kill(9, child_pid)
+          end
         rescue Errno::ESRCH
         end
       end
