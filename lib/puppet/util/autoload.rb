@@ -85,6 +85,7 @@ class Puppet::Util::Autoload
     # Get the correct file to load for a given path
     # returns nil if no file is found
     def get_file(name, env)
+      return nil if name =~ /::/
       name = name + '.rb' unless name =~ /\.rb$/
       path = search_directories(env).find { |dir| Puppet::FileSystem.exist?(File.join(dir, name)) }
       path and File.join(path, name)
