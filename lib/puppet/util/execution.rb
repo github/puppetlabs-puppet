@@ -171,8 +171,20 @@ module Puppet::Util::Execution
     if execution_stub = Puppet::Util::ExecutionStub.current_value
       return execution_stub.call(*exec_args)
     elsif Puppet.features.posix?
-      child_pid = execute_posix(*exec_args)
-      exit_status = Process.waitpid2(child_pid).last.exitstatus
+      begin
+        child_pid = execute_posix(*exec_args)
+        exit_status = Process.waitpid2(child_pid).last.exitstatus
+      ensure
+        begin
+          Process.kill(0, child_pid)
+          child_ppid = `ps -p #{child_pid} -o ppid`.strip.split("\n").last.to_i
+          if child_ppid == Process.pid
+            Puppet.debug("SIGKILLing child process '#{child_pid}'")
+            Process.kill(9, child_pid)
+          end
+        rescue Errno::ESRCH
+        end
+      end
     elsif Puppet.features.microsoft_windows?
       process_info = execute_windows(*exec_args)
       begin
